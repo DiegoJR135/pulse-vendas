@@ -7,11 +7,18 @@
 # no Postgres. Por enquanto, hardcoded é suficiente e simples de editar.
 
 SELLERS = {
-    "marina": {"name": "Marina Souza", "avatar": "https://i.pravatar.cc/150?img=47"},
-    "diego": {"name": "Diego Martins", "avatar": "https://i.pravatar.cc/150?img=12"},
-    "paula": {"name": "Paula Nunes", "avatar": "https://i.pravatar.cc/150?img=32"},
-    "lucas": {"name": "Lucas Ferreira", "avatar": "https://i.pravatar.cc/150?img=68"},
-    "camila": {"name": "Camila Rocha", "avatar": "https://i.pravatar.cc/150?img=21"},
+    "natyjustino": {"name": "Naty Justino", "avatar": "https://i.pravatar.cc/150?img=47"},
+    "karolina": {"name": "Karolina", "avatar": "https://i.pravatar.cc/150?img=32"},
+    "lavinia": {"name": "Lavínia", "avatar": "https://i.pravatar.cc/150?img=21"},
+}
+
+# Alguns links usam um código de UTM diferente do nome do vendedor (ex: os
+# links de "Cs" e "Social Media" da planilha), mas a venda deve contar pro
+# mesmo vendedor no leaderboard. Mapeia esses códigos alternativos pra
+# chave real em SELLERS.
+SELLER_ALIASES = {
+    "cs": "natyjustino",
+    "social_media": "karolina",
 }
 
 FALLBACK = {"name": "Vendedor não identificado", "avatar": "https://i.pravatar.cc/150?img=1"}
@@ -35,6 +42,7 @@ def resolve_seller(code: str | None):
     if not code:
         return "desconhecido", FALLBACK
     key = code.strip().lower()
+    key = SELLER_ALIASES.get(key, key)  # traduz códigos alternativos (cs, social_media, ...) pro vendedor real
     seller = SELLERS.get(key)
     if seller:
         return key, seller
