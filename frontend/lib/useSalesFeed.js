@@ -120,9 +120,26 @@ export function useSalesFeed() {
       return () => clearInterval(interval);
     }
 
-    // ---------- Modo real: EventSource (SSE) no backend Python ----------
+    // ---------- Modo real: busca o snapshot atual, depois liga o SSE ----------
     let reconnectTimer;
     let es;
+    let cancelled = false;
+
+    // Sem isso, toda vez que a página carrega (ou dá refresh), ela começa
+    // vazia e só mostra algo quando a PRÓXIMA venda chegar — as vendas que
+    // já aconteceram e estão salvas no Postgres nunca voltam pra tela.
+    // Busca o estado atual uma vez via REST antes de abrir o SSE, que a
+    // partir daí só cuida das atualizações seguintes.
+    async function fetchInitialSnapshot() {
+      try {
+        const res = await fetch(`${API_URL}/api/dashboard`);
+        if (!res.ok) return;
+        const snapshot = await res.json();
+        if (!cancelled) setData(snapshot);
+      } catch {
+        // sem sorte agora, o SSE ainda vai atualizar assim que uma venda chegar
+      }
+    }
 
     function connect() {
       es = new EventSource(`${API_URL}/api/dashboard/stream`);
@@ -146,9 +163,11 @@ export function useSalesFeed() {
       };
     }
 
+    fetchInitialSnapshot();
     connect();
 
     return () => {
+      cancelled = true;
       clearTimeout(reconnectTimer);
       es?.close();
     };
