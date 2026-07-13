@@ -59,6 +59,10 @@ function buildSnapshotFromHistory(history) {
     .sort((a, b) => b.total - a.total)
     .slice(0, 5)
     .map((s, i) => ({ ...s, rank: i + 1 }));
+  const leaderboardVolumeAll = Object.values(sellerTotals)
+    .sort((a, b) => b.deals - a.deals)
+    .slice(0, 5)
+    .map((s, i) => ({ ...s, rank: i + 1 }));
 
   return {
     dailyGoal: { current, target: DAILY_GOAL_TARGET },
@@ -66,6 +70,11 @@ function buildSnapshotFromHistory(history) {
     lastSale: history[0] || null,
     salesFeed: history.slice(1, 8),
     leaderboard,
+    // simulador não distingue "convidado" de pago — usa o mesmo ranking
+    // pras três abas só pra não quebrar a UI em modo dev.
+    leaderboardVolumeAll,
+    leaderboardVolumePaid: leaderboard,
+    leaderboardRevenue: leaderboard,
     updatedAt: new Date().toISOString(),
   };
 }
@@ -92,6 +101,9 @@ const EMPTY_SNAPSHOT = {
   lastSale: null,
   salesFeed: [],
   leaderboard: [],
+  leaderboardVolumeAll: [],
+  leaderboardVolumePaid: [],
+  leaderboardRevenue: [],
   updatedAt: null,
 };
 

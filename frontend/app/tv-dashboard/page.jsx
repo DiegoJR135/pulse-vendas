@@ -32,7 +32,11 @@ export default function TvDashboardPage() {
 
         {/* Coluna direita */}
         <section className="col-span-3 flex min-h-0 min-w-0 flex-col gap-6">
-          <Leaderboard sellers={data.leaderboard} />
+          <Leaderboard
+            volumeAll={data.leaderboardVolumeAll}
+            volumePaid={data.leaderboardVolumePaid}
+            revenue={data.leaderboardRevenue}
+          />
           <SalesFeed sales={data.salesFeed} />
         </section>
       </main>

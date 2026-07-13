@@ -1,16 +1,46 @@
 // components/Leaderboard.jsx
+"use client";
+
+import { useState } from "react";
 import { Crown } from "lucide-react";
 
 function formatCurrency(value) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 }
 
-export default function Leaderboard({ sellers }) {
+const TABS = [
+  { key: "volumeAll", label: "Volume (com convidados)" },
+  { key: "volumePaid", label: "Volume (pagas)" },
+  { key: "revenue", label: "Faturamento" },
+];
+
+export default function Leaderboard({ volumeAll = [], volumePaid = [], revenue = [] }) {
+  const [tab, setTab] = useState("revenue");
+
+  const datasets = { volumeAll, volumePaid, revenue };
+  const sellers = datasets[tab];
+  // Nas abas de volume, o número que mais importa é a quantidade de vendas;
+  // na de faturamento, é o valor em R$. Cada aba destaca a métrica certa.
+  const primaryMetric = tab === "revenue" ? (s) => formatCurrency(s.total) : (s) => `${s.deals} venda${s.deals === 1 ? "" : "s"}`;
+  const secondaryMetric = tab === "revenue" ? (s) => `${s.deals} venda${s.deals === 1 ? "" : "s"}` : (s) => formatCurrency(s.total);
+
   return (
     <div className="glass-card min-w-0 p-6">
-      <span className="mb-5 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-        Ranking geral
-      </span>
+      <div className="mb-4 flex flex-wrap gap-1.5">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+              tab === t.key
+                ? "bg-[var(--green-600)] text-white"
+                : "border border-[var(--panel-border)] text-[var(--muted)]"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       {sellers.length === 0 ? (
         <p className="text-sm text-[var(--muted)]">Ninguém vendeu ainda.</p>
@@ -37,10 +67,10 @@ export default function Leaderboard({ sellers }) {
 
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-white">{s.name}</p>
-                  <p className="text-[10px] text-[var(--muted-dim)]">{s.deals} vendas</p>
+                  <p className="text-[10px] text-[var(--muted-dim)]">{secondaryMetric(s)}</p>
                 </div>
 
-                <p className="text-money-glow flex-shrink-0 text-sm font-bold">{formatCurrency(s.total)}</p>
+                <p className="text-money-glow flex-shrink-0 text-sm font-bold">{primaryMetric(s)}</p>
               </div>
             );
           })}
