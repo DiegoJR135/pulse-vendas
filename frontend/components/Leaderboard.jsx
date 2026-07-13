@@ -9,8 +9,8 @@ function formatCurrency(value) {
 }
 
 const TABS = [
-  { key: "volumeAll", label: "Volume (com convidados)" },
-  { key: "volumePaid", label: "Volume (pagas)" },
+  { key: "volumeAll", label: "Total de ingressos" },
+  { key: "volumePaid", label: "Total de ingressos (pagos)" },
   { key: "revenue", label: "Faturamento" },
 ];
 
@@ -18,7 +18,15 @@ export default function Leaderboard({ volumeAll = [], volumePaid = [], revenue =
   const [tab, setTab] = useState("revenue");
 
   const datasets = { volumeAll, volumePaid, revenue };
-  const sellers = datasets[tab];
+  // Reordena e renumera aqui no front em vez de confiar cegamente no "rank"
+  // que vem do backend/cache — se o Redis servir um snapshot com a ordem
+  // dessincronizada do rank (o que já aconteceu), a lista aparece fora de ordem.
+  // Cada aba tem sua própria métrica de ordenação: volume = qtd. de vendas,
+  // faturamento = valor total.
+  const sortKey = tab === "revenue" ? "total" : "deals";
+  const sellers = [...datasets[tab]]
+    .sort((a, b) => b[sortKey] - a[sortKey])
+    .map((s, i) => ({ ...s, rank: i + 1 }));
   // Nas abas de volume, o número que mais importa é a quantidade de vendas;
   // na de faturamento, é o valor em R$. Cada aba destaca a métrica certa.
   const primaryMetric = tab === "revenue" ? (s) => formatCurrency(s.total) : (s) => `${s.deals} venda${s.deals === 1 ? "" : "s"}`;
