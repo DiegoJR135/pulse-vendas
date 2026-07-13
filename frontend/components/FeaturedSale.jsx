@@ -8,8 +8,8 @@ function formatCurrency(value) {
 export default function FeaturedSale({ sale }) {
   if (!sale) {
     return (
-      <div className="glass-card flex h-full flex-col items-center justify-center rounded-3xl p-10 text-center">
-        <p className="text-3xl font-bold text-[var(--muted)]">Aguardando a primeira venda...</p>
+      <div className="glass-card flex h-full flex-col items-center justify-center p-10 text-center">
+        <p className="font-headline text-3xl text-[var(--muted)]">Aguardando a primeira venda...</p>
         <p className="mt-3 text-sm text-[var(--muted-dim)]">Assim que fechar, ela aparece aqui automaticamente.</p>
       </div>
     );
@@ -18,29 +18,20 @@ export default function FeaturedSale({ sale }) {
   const isAuto = sale.origin === "automatico";
 
   return (
-    <div key={sale.id} className="glass-card animate-glow-card flex h-full flex-col items-center justify-between rounded-3xl px-10 py-8 text-center">
-      <p className="text-xs font-bold uppercase tracking-[0.35em] text-[var(--violet-400)]">Última venda fechada</p>
+    <div key={sale.id} className="glass-card flex h-full flex-col items-center justify-between px-10 py-8 text-center">
+      <p className="text-xs font-bold uppercase tracking-[0.35em] text-[var(--green-400)]">Última venda fechada</p>
 
       <div className="flex flex-1 flex-col items-center justify-center">
-        <p key={sale.id} className="animate-value-pop text-money-glow text-[6.5rem] font-black leading-[0.9] tracking-tight xl:text-[7.5rem]">
+        <p key={sale.id} className="animate-value-pop font-headline text-money-glow text-[6.5rem] leading-[0.9] tracking-tight xl:text-[7.5rem]">
           {formatCurrency(sale.value)}
         </p>
         <p className="mt-4 max-w-xl truncate text-2xl font-medium text-white/90">{sale.product}</p>
       </div>
 
       <div className="flex w-full flex-col items-center gap-5">
-        <div className="flex flex-col items-center gap-3">
-          <div className="animate-glow-ring rounded-full">
-            <img
-              src={sale.seller.avatar}
-              alt={sale.seller.name}
-              className="h-24 w-24 rounded-full border-2 border-[var(--violet-400)]/70 object-cover"
-            />
-          </div>
-          <div>
-            <p className="truncate text-2xl font-bold text-white">{sale.seller.name}</p>
-            <p className="truncate text-sm text-[var(--muted)]">Cliente: {sale.client}</p>
-          </div>
+        <div>
+          <p className="truncate text-2xl font-bold text-white">{sale.seller.name}</p>
+          <p className="truncate text-sm text-[var(--muted)]">Cliente: {sale.client}</p>
         </div>
 
         <div className="flex items-center gap-3">

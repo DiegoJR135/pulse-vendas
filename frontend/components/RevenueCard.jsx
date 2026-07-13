@@ -9,11 +9,11 @@ export default function RevenueCard({ current, target }) {
   const percent = Math.min(100, Math.round((current / target) * 100));
 
   return (
-    <div className="glass-card rounded-3xl p-6">
+    <div className="glass-card p-6">
       <div className="mb-4 flex items-center justify-between">
         <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-          <TrendingUp className="h-4 w-4 text-[var(--violet-400)]" />
-          Receita do dia
+          <TrendingUp className="h-4 w-4 text-[var(--green-400)]" />
+          Receita total
         </span>
         <span className="flex items-center gap-1 font-mono text-[10px] font-medium text-[var(--muted)]">
           <Target className="h-3 w-3" />
@@ -21,7 +21,7 @@ export default function RevenueCard({ current, target }) {
         </span>
       </div>
 
-      <p key={current} className="animate-value-pop text-money-glow text-5xl font-black leading-none tracking-tight">
+      <p key={current} className="animate-value-pop font-headline text-money-glow text-5xl leading-none tracking-tight">
         {formatCurrency(current)}
       </p>
 

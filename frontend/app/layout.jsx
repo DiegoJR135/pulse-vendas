@@ -2,8 +2,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Grupo Nexus | Servidor de Vendas",
-  description: "Painel de acompanhamento de vendas em tempo real para TV — Grupo Nexus",
+  title: "MVW | Servidor de Vendas",
+  description: "Painel de acompanhamento de vendas em tempo real para TV — MVW",
 };
 
 export default function RootLayout({ children }) {

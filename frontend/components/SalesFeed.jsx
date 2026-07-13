@@ -13,7 +13,7 @@ export default function SalesFeed({ sales }) {
   const items = sales.slice(0, 3);
 
   return (
-    <div className="glass-card flex-1 rounded-3xl p-6">
+    <div className="glass-card flex-1 p-6">
       <span className="mb-4 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
         Histórico
       </span>
@@ -24,7 +24,6 @@ export default function SalesFeed({ sales }) {
         <div className="space-y-3">
           {items.map((sale) => (
             <div key={sale.id} className="flex items-center gap-3">
-              <img src={sale.seller.avatar} alt={sale.seller.name} className="h-8 w-8 flex-shrink-0 rounded-full object-cover" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-white">{sale.seller.name}</p>
                 <p className="truncate text-[10px] text-[var(--muted-dim)]">{sale.product}</p>
