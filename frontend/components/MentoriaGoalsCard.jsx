@@ -40,7 +40,7 @@ export default function MentoriaGoalsCard({ mentoriaGoal, meetingsGoal }) {
       <GoalBar
         icon={CalendarClock}
         label="Reuniões agendadas"
-        sublabel="Meta semanal — reseta domingo às 00:00"
+        sublabel="Meta mensal — reseta todo dia 1"
         current={meetingsGoal.current}
         target={meetingsGoal.target}
       />

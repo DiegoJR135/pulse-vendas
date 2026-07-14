@@ -1,26 +1,34 @@
 // components/SalesFeed.jsx
 "use client";
 
-import { useState } from "react";
-import { Bot, Pencil, CalendarClock } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Bot, Pencil, CalendarClock, Trash2 } from "lucide-react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 function formatCurrency(value) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 }
 
-function formatTime(iso) {
-  return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-}
-
-// Histórico de ingressos é sempre "hoje-ish" (vem em tempo real da Greenn),
-// mas o histórico de mentoria vem de datas digitadas manualmente na
-// planilha — podem ser de qualquer dia. Sem mostrar o dia, a data some
-// visualmente (só aparecia a hora, tipo "00:00", sem contexto nenhum).
+// Mostra dia + hora — sem o dia, fica impossível saber QUANDO a venda
+// aconteceu de fato (principalmente na mentoria, que vem de datas digitadas
+// manualmente na planilha e podem ser de qualquer dia, não só hoje).
 function formatDateTime(iso) {
   const d = new Date(iso);
   const date = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
   const time = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   return `${date} · ${time}`;
+}
+
+function monthKey(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function monthLabel(key) {
+  const [year, month] = key.split("-").map(Number);
+  const label = new Date(year, month - 1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 const TABS = [
@@ -30,11 +38,39 @@ const TABS = [
 
 export default function SalesFeed({ sales, mentoriaHistory = [] }) {
   const [tab, setTab] = useState("ingressos");
-  const items = tab === "ingressos" ? sales : mentoriaHistory;
+  const [month, setMonth] = useState("all");
+  const [deletingId, setDeletingId] = useState(null);
+
+  const availableMonths = useMemo(() => {
+    const keys = new Set(mentoriaHistory.map((item) => monthKey(item.datetime)));
+    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
+  }, [mentoriaHistory]);
+
+  const filteredMentoria = useMemo(() => {
+    if (month === "all") return mentoriaHistory;
+    return mentoriaHistory.filter((item) => monthKey(item.datetime) === month);
+  }, [mentoriaHistory, month]);
+
+  const items = tab === "ingressos" ? sales : filteredMentoria;
+
+  async function handleDelete(item) {
+    const rawId = String(item.id).replace("mentoria-", "");
+    if (!window.confirm(`Excluir "${item.type === "meeting" ? "reunião" : "venda"}" de ${item.client}?`)) return;
+    setDeletingId(item.id);
+    try {
+      await fetch(`${API_URL}/api/mentoria/${rawId}`, { method: "DELETE" });
+      // não precisa atualizar o estado local — o backend publica o snapshot
+      // novo via SSE assim que apaga, e o painel atualiza sozinho.
+    } catch {
+      // se falhar, o item continua na lista — a pessoa pode tentar de novo
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div className="glass-card flex min-h-0 flex-1 flex-col p-6">
-      <div className="mb-4 flex flex-shrink-0 flex-wrap gap-1.5">
+      <div className="mb-3 flex flex-shrink-0 flex-wrap items-center gap-1.5">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -48,11 +84,26 @@ export default function SalesFeed({ sales, mentoriaHistory = [] }) {
             {t.label}
           </button>
         ))}
+
+        {tab === "mentoria" && availableMonths.length > 0 && (
+          <select
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="ml-auto rounded-full border border-[var(--panel-border)] bg-transparent px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--muted)] outline-none"
+          >
+            <option value="all">Todos os meses</option>
+            {availableMonths.map((key) => (
+              <option key={key} value={key}>
+                {monthLabel(key)}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {items.length === 0 ? (
         <p className="text-sm text-[var(--muted)]">
-          {tab === "ingressos" ? "Nenhuma venda anterior ainda." : "Nenhuma venda ou reunião registrada ainda."}
+          {tab === "ingressos" ? "Nenhuma venda anterior ainda." : "Nenhuma venda ou reunião registrada nesse período."}
         </p>
       ) : tab === "ingressos" ? (
         <div className="scrollbar-thin min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
@@ -67,7 +118,7 @@ export default function SalesFeed({ sales, mentoriaHistory = [] }) {
                 <p className="text-money-glow text-sm font-bold">{formatCurrency(item.value)}</p>
                 <div className="mt-0.5 flex items-center justify-end gap-1 text-[9px] text-[var(--muted-dim)]">
                   {item.origin === "automatico" ? <Bot className="h-2.5 w-2.5" /> : <Pencil className="h-2.5 w-2.5" />}
-                  {formatTime(item.datetime)}
+                  {formatDateTime(item.datetime)}
                 </div>
               </div>
             </div>
@@ -84,19 +135,29 @@ export default function SalesFeed({ sales, mentoriaHistory = [] }) {
                   {item.type === "meeting" ? "Reunião agendada" : item.product} · {item.channel}
                 </p>
               </div>
-              <div className="flex-shrink-0 text-right">
-                {item.type === "meeting" ? (
-                  <p className="flex items-center justify-end gap-1 text-sm font-bold text-[var(--green-400)]">
-                    <CalendarClock className="h-3.5 w-3.5" />
-                    Reunião
-                  </p>
-                ) : (
-                  <p className="text-money-glow text-sm font-bold">{formatCurrency(item.value)}</p>
-                )}
-                <div className="mt-0.5 flex items-center justify-end gap-1 text-[9px] text-[var(--muted-dim)]">
-                  {item.origin === "automatico" ? <Bot className="h-2.5 w-2.5" /> : <Pencil className="h-2.5 w-2.5" />}
-                  {formatDateTime(item.datetime)}
+              <div className="flex flex-shrink-0 items-start gap-2">
+                <div className="text-right">
+                  {item.type === "meeting" ? (
+                    <p className="flex items-center justify-end gap-1 text-sm font-bold text-[var(--green-400)]">
+                      <CalendarClock className="h-3.5 w-3.5" />
+                      Reunião
+                    </p>
+                  ) : (
+                    <p className="text-money-glow text-sm font-bold">{formatCurrency(item.value)}</p>
+                  )}
+                  <div className="mt-0.5 flex items-center justify-end gap-1 text-[9px] text-[var(--muted-dim)]">
+                    {item.origin === "automatico" ? <Bot className="h-2.5 w-2.5" /> : <Pencil className="h-2.5 w-2.5" />}
+                    {formatDateTime(item.datetime)}
+                  </div>
                 </div>
+                <button
+                  onClick={() => handleDelete(item)}
+                  disabled={deletingId === item.id}
+                  title="Excluir"
+                  className="flex-shrink-0 rounded-lg p-1.5 text-[var(--muted-dim)] transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-40"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               </div>
             </div>
           ))}

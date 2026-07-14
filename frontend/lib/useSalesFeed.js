@@ -16,7 +16,7 @@ const SIMULATOR_INTERVAL_MS = 10000;
 const DAILY_GOAL_TARGET = 250000;
 const TICKET_GOAL_TARGET = 150;
 const MENTORIA_GOAL_TARGET = 5;
-const MEETINGS_GOAL_TARGET = 2;
+const MEETINGS_GOAL_TARGET = 8;
 
 // ---------- Simulador (só usado em dev, sem backend) ----------
 const SIM_SELLERS = [
