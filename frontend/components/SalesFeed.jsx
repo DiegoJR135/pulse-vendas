@@ -70,12 +70,17 @@ export default function SalesFeed({ sales, mentoriaHistory = [] }) {
 
   const items = tab === "ingressos" ? filteredIngressos : filteredMentoria;
 
-  async function handleDelete(item) {
-    const rawId = String(item.id).replace("mentoria-", "");
-    if (!window.confirm(`Excluir "${item.type === "meeting" ? "reunião" : "venda"}" de ${item.client}?`)) return;
+  // Ingressos usam a tabela "sales" (id tipo "sale-15"), mentoria usa
+  // "mentoria_events" (id tipo "mentoria-7") — endpoints e prefixo diferentes.
+  async function handleDelete(item, kind) {
+    const endpoint = kind === "mentoria" ? "mentoria" : "sale";
+    const prefix = kind === "mentoria" ? "mentoria-" : "sale-";
+    const rawId = String(item.id).replace(prefix, "");
+    const nome = kind === "mentoria" && item.type === "meeting" ? "reunião" : "venda";
+    if (!window.confirm(`Excluir ${nome} de ${item.client}? Essa ação não pode ser desfeita.`)) return;
     setDeletingId(item.id);
     try {
-      await fetch(`${API_URL}/api/mentoria/${rawId}`, { method: "DELETE" });
+      await fetch(`${API_URL}/api/${endpoint}/${rawId}`, { method: "DELETE" });
       // não precisa atualizar o estado local — o backend publica o snapshot
       // novo via SSE assim que apaga, e o painel atualiza sozinho.
     } catch {
@@ -131,12 +136,22 @@ export default function SalesFeed({ sales, mentoriaHistory = [] }) {
                 <p className="truncate text-xs text-[var(--muted)]">Cliente: {item.client}</p>
                 <p className="truncate text-[10px] text-[var(--muted-dim)]">{item.product}</p>
               </div>
-              <div className="flex-shrink-0 text-right">
-                <p className="text-money-glow text-sm font-bold">{formatCurrency(item.value)}</p>
-                <div className="mt-0.5 flex items-center justify-end gap-1 text-[9px] text-[var(--muted-dim)]">
-                  {item.origin === "automatico" ? <Bot className="h-2.5 w-2.5" /> : <Pencil className="h-2.5 w-2.5" />}
-                  {formatDateTime(item.datetime)}
+              <div className="flex flex-shrink-0 items-start gap-2">
+                <div className="text-right">
+                  <p className="text-money-glow text-sm font-bold">{formatCurrency(item.value)}</p>
+                  <div className="mt-0.5 flex items-center justify-end gap-1 text-[9px] text-[var(--muted-dim)]">
+                    {item.origin === "automatico" ? <Bot className="h-2.5 w-2.5" /> : <Pencil className="h-2.5 w-2.5" />}
+                    {formatDateTime(item.datetime)}
+                  </div>
                 </div>
+                <button
+                  onClick={() => handleDelete(item, "ingressos")}
+                  disabled={deletingId === item.id}
+                  title="Excluir"
+                  className="flex-shrink-0 rounded-lg p-1.5 text-[var(--muted-dim)] transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-40"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
               </div>
             </div>
           ))}
@@ -168,7 +183,7 @@ export default function SalesFeed({ sales, mentoriaHistory = [] }) {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleDelete(item)}
+                  onClick={() => handleDelete(item, "mentoria")}
                   disabled={deletingId === item.id}
                   title="Excluir"
                   className="flex-shrink-0 rounded-lg p-1.5 text-[var(--muted-dim)] transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-40"
