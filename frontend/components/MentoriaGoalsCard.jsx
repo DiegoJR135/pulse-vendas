@@ -26,7 +26,7 @@ export default function MentoriaGoalsCard({ mentoriaGoal, meetingsGoal }) {
   return (
     <div className="glass-card space-y-5 p-6">
       <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
-        Diamond Sales — Mentoria
+        Meta mensal — Mentoria
       </span>
 
       <GoalBar

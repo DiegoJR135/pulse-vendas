@@ -38,20 +38,37 @@ const TABS = [
 
 export default function SalesFeed({ sales, mentoriaHistory = [] }) {
   const [tab, setTab] = useState("ingressos");
-  const [month, setMonth] = useState("all");
+  // Mês selecionado é independente por aba — filtrar um não deve resetar o outro.
+  const [monthIngressos, setMonthIngressos] = useState("all");
+  const [monthMentoria, setMonthMentoria] = useState("all");
   const [deletingId, setDeletingId] = useState(null);
 
-  const availableMonths = useMemo(() => {
+  const month = tab === "ingressos" ? monthIngressos : monthMentoria;
+  const setMonth = tab === "ingressos" ? setMonthIngressos : setMonthMentoria;
+
+  const availableMonthsIngressos = useMemo(() => {
+    const keys = new Set(sales.map((item) => monthKey(item.datetime)));
+    return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
+  }, [sales]);
+
+  const availableMonthsMentoria = useMemo(() => {
     const keys = new Set(mentoriaHistory.map((item) => monthKey(item.datetime)));
     return Array.from(keys).sort((a, b) => (a < b ? 1 : -1));
   }, [mentoriaHistory]);
 
-  const filteredMentoria = useMemo(() => {
-    if (month === "all") return mentoriaHistory;
-    return mentoriaHistory.filter((item) => monthKey(item.datetime) === month);
-  }, [mentoriaHistory, month]);
+  const availableMonths = tab === "ingressos" ? availableMonthsIngressos : availableMonthsMentoria;
 
-  const items = tab === "ingressos" ? sales : filteredMentoria;
+  const filteredIngressos = useMemo(() => {
+    if (monthIngressos === "all") return sales;
+    return sales.filter((item) => monthKey(item.datetime) === monthIngressos);
+  }, [sales, monthIngressos]);
+
+  const filteredMentoria = useMemo(() => {
+    if (monthMentoria === "all") return mentoriaHistory;
+    return mentoriaHistory.filter((item) => monthKey(item.datetime) === monthMentoria);
+  }, [mentoriaHistory, monthMentoria]);
+
+  const items = tab === "ingressos" ? filteredIngressos : filteredMentoria;
 
   async function handleDelete(item) {
     const rawId = String(item.id).replace("mentoria-", "");
@@ -85,7 +102,7 @@ export default function SalesFeed({ sales, mentoriaHistory = [] }) {
           </button>
         ))}
 
-        {tab === "mentoria" && availableMonths.length > 0 && (
+        {availableMonths.length > 0 && (
           <select
             value={month}
             onChange={(e) => setMonth(e.target.value)}
@@ -103,7 +120,7 @@ export default function SalesFeed({ sales, mentoriaHistory = [] }) {
 
       {items.length === 0 ? (
         <p className="text-sm text-[var(--muted)]">
-          {tab === "ingressos" ? "Nenhuma venda anterior ainda." : "Nenhuma venda ou reunião registrada nesse período."}
+          {tab === "ingressos" ? "Nenhuma venda nesse período." : "Nenhuma venda ou reunião registrada nesse período."}
         </p>
       ) : tab === "ingressos" ? (
         <div className="scrollbar-thin min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
