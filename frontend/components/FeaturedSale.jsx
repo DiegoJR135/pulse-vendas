@@ -22,6 +22,11 @@ export default function FeaturedSale({ sale }) {
       <p className="text-xs font-bold uppercase tracking-[0.35em] text-[var(--green-400)]">Última venda fechada</p>
 
       <div className="flex flex-1 flex-col items-center justify-center">
+        {sale.kind === "mentoria" && (
+          <span className="tag-pill mb-3 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--green-400)]">
+            Diamond Sales — Mentoria
+          </span>
+        )}
         <p key={sale.id} className="animate-value-pop font-headline text-money-glow text-[6.5rem] leading-[0.9] tracking-tight xl:text-[7.5rem]">
           {formatCurrency(sale.value)}
         </p>
