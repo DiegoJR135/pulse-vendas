@@ -5,8 +5,12 @@ function formatCurrency(value) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 }
 
-export default function RevenueCard({ current, target }) {
-  const percent = Math.min(100, Math.round((current / target) * 100));
+// A meta aqui é por QUANTIDADE DE INGRESSOS vendidos (pagos + convidados),
+// não mais por valor em R$ — mas o número grande em destaque continua
+// mostrando a receita total acumulada, só a barrinha/meta embaixo mudou.
+export default function RevenueCard({ revenue, ticketsCurrent, ticketsTarget }) {
+  const percent = Math.min(100, Math.round((ticketsCurrent / ticketsTarget) * 100));
+  const missing = Math.max(ticketsTarget - ticketsCurrent, 0);
 
   return (
     <div className="glass-card p-6">
@@ -17,12 +21,12 @@ export default function RevenueCard({ current, target }) {
         </span>
         <span className="flex items-center gap-1 font-mono text-[10px] font-medium text-[var(--muted)]">
           <Target className="h-3 w-3" />
-          Meta {formatCurrency(target)}
+          Meta {ticketsTarget} ingressos
         </span>
       </div>
 
-      <p key={current} className="animate-value-pop font-headline text-money-glow text-5xl leading-none tracking-tight">
-        {formatCurrency(current)}
+      <p key={revenue} className="animate-value-pop font-headline text-money-glow text-5xl leading-none tracking-tight">
+        {formatCurrency(revenue)}
       </p>
 
       <div className="mt-5">
@@ -30,8 +34,8 @@ export default function RevenueCard({ current, target }) {
           <div className="progress-fill h-full rounded-full" style={{ width: `${percent}%` }} />
         </div>
         <div className="mt-2.5 flex justify-between font-mono text-[10px] font-medium text-[var(--muted)]">
-          <span>{percent}% da meta batida</span>
-          <span>Faltam {formatCurrency(Math.max(target - current, 0))}</span>
+          <span>{ticketsCurrent} / {ticketsTarget} ingressos ({percent}%)</span>
+          <span>Faltam {missing} ingresso{missing === 1 ? "" : "s"}</span>
         </div>
       </div>
     </div>

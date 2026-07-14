@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import TickerBanner from "@/components/TickerBanner";
 import RevenueCard from "@/components/RevenueCard";
 import ChannelsCard from "@/components/ChannelsCard";
+import MentoriaGoalsCard from "@/components/MentoriaGoalsCard";
 import FeaturedSale from "@/components/FeaturedSale";
 import Leaderboard from "@/components/Leaderboard";
 import SalesFeed from "@/components/SalesFeed";
@@ -20,8 +21,13 @@ export default function TvDashboardPage() {
 
       <main className="grid min-h-0 flex-1 grid-cols-12 gap-6 px-10 pb-8">
         {/* Coluna esquerda */}
-        <section className="col-span-3 flex min-h-0 min-w-0 flex-col gap-6">
-          <RevenueCard current={data.dailyGoal.current} target={data.dailyGoal.target} />
+        <section className="col-span-3 flex min-h-0 min-w-0 flex-col gap-6 overflow-y-auto scrollbar-thin">
+          <RevenueCard
+            revenue={data.dailyGoal.current}
+            ticketsCurrent={data.ticketsGoal.current}
+            ticketsTarget={data.ticketsGoal.target}
+          />
+          <MentoriaGoalsCard mentoriaGoal={data.mentoriaGoal} meetingsGoal={data.meetingsGoal} />
           <ChannelsCard channels={data.channels} />
         </section>
 
@@ -37,7 +43,7 @@ export default function TvDashboardPage() {
             volumePaid={data.leaderboardVolumePaid}
             revenue={data.leaderboardRevenue}
           />
-          <SalesFeed sales={data.salesFeed} />
+          <SalesFeed sales={data.salesFeed} mentoriaHistory={data.mentoriaHistory} />
         </section>
       </main>
 

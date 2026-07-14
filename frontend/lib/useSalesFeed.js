@@ -14,6 +14,9 @@ const USE_SIMULATOR = process.env.NEXT_PUBLIC_USE_SIMULATOR !== "false";
 const RECONNECT_DELAY_MS = 3000;
 const SIMULATOR_INTERVAL_MS = 10000;
 const DAILY_GOAL_TARGET = 250000;
+const TICKET_GOAL_TARGET = 150;
+const MENTORIA_GOAL_TARGET = 5;
+const MEETINGS_GOAL_TARGET = 2;
 
 // ---------- Simulador (só usado em dev, sem backend) ----------
 const SIM_SELLERS = [
@@ -66,9 +69,15 @@ function buildSnapshotFromHistory(history) {
 
   return {
     dailyGoal: { current, target: DAILY_GOAL_TARGET },
+    ticketsGoal: { current: history.length, target: TICKET_GOAL_TARGET },
+    // simulador não gera vendas/reuniões de mentoria — fica zerado, só pra
+    // não quebrar a UI em modo dev.
+    mentoriaGoal: { current: 0, target: MENTORIA_GOAL_TARGET },
+    meetingsGoal: { current: 0, target: MEETINGS_GOAL_TARGET },
+    mentoriaHistory: [],
     channels,
     lastSale: history[0] || null,
-    salesFeed: history.slice(1, 8),
+    salesFeed: history.slice(0, 8),
     leaderboard,
     // simulador não distingue "convidado" de pago — usa o mesmo ranking
     // pras três abas só pra não quebrar a UI em modo dev.
@@ -97,6 +106,10 @@ function makeSimulatedSale() {
 // hydration mismatch. Por isso ele nunca pode conter Math.random()/Date.now().
 const EMPTY_SNAPSHOT = {
   dailyGoal: { current: 0, target: DAILY_GOAL_TARGET },
+  ticketsGoal: { current: 0, target: TICKET_GOAL_TARGET },
+  mentoriaGoal: { current: 0, target: MENTORIA_GOAL_TARGET },
+  meetingsGoal: { current: 0, target: MEETINGS_GOAL_TARGET },
+  mentoriaHistory: [],
   channels: [],
   lastSale: null,
   salesFeed: [],
