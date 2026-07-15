@@ -36,7 +36,7 @@ function buildTickerSales(data) {
 }
 
 const VIEWS = [
-  { key: "real", label: "Dados Reais" },
+  { key: "real", label: "Dados 1" },
   { key: "teste", label: "Dados 2" },
 ];
 
