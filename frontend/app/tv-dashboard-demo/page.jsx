@@ -1,17 +1,17 @@
 // app/tv-dashboard-demo/page.jsx
 //
-// Tela de DEMONSTRAÇÃO (uso interno) — visualmente igual à tela real
-// (/tv-dashboard), mas com 88 vendas de ingresso fictícias somadas às
-// vendas reais só aqui, geradas no navegador (não grava nada no
-// backend/banco). Existe pra testar/mostrar internamente como o painel
-// fica com bastante volume de vendas, sem misturar com os dados reais
-// que o Rafa acompanha na tela principal.
+// Tela ÚNICA de uso interno com um alternador entre duas visões:
+// "Dados Reais" (mesmos dados da tela principal /tv-dashboard) e
+// "Dados de Teste" (soma 88 vendas fictícias por cima dos dados reais,
+// gerado no navegador, sem gravar nada no backend/banco).
 //
-// Mantém um indicador discreto (não é a barra amarela chamativa) — só
-// pra quem souber que é a tela de teste confirmar isso, sem virar um
-// elemento gritante na apresentação.
+// Abre sempre em "Dados Reais" por padrão — a visão de teste só aparece
+// se alguém trocar manualmente pra ela, e enquanto estiver nela, o selo
+// "Teste interno" fica visível no canto pra deixar claro que aqueles
+// números não são reais.
 "use client";
 
+import { useState } from "react";
 import Header from "@/components/Header";
 import TickerBanner from "@/components/TickerBanner";
 import RevenueCard from "@/components/RevenueCard";
@@ -20,6 +20,7 @@ import MentoriaGoalsCard from "@/components/MentoriaGoalsCard";
 import FeaturedSale from "@/components/FeaturedSale";
 import Leaderboard from "@/components/Leaderboard";
 import SalesFeed from "@/components/SalesFeed";
+import { useSalesFeed } from "@/lib/useSalesFeed";
 import { useDemoSalesFeed } from "@/lib/useDemoSalesFeed";
 import { FlaskConical } from "lucide-react";
 
@@ -35,22 +36,55 @@ function buildTickerSales(data) {
   return unique.slice(0, 3);
 }
 
+const VIEWS = [
+  { key: "real", label: "Dados Reais" },
+  { key: "teste", label: "Dados de Teste" },
+];
+
 export default function TvDashboardDemoPage() {
-  const { data, isOnline } = useDemoSalesFeed();
+  // Os dois hooks rodam sempre (não dá pra chamar hook condicionalmente) —
+  // cada um cuida da sua própria fonte (SSE real / snapshot real + fake),
+  // e só escolhemos qual dos dois resultados exibir conforme o botão ativo.
+  const real = useSalesFeed();
+  const teste = useDemoSalesFeed();
+
+  // Abre sempre no real por padrão.
+  const [view, setView] = useState("real");
+  const isTeste = view === "teste";
+  const { data, isOnline } = isTeste ? teste : real;
 
   return (
     <div className="relative flex h-screen w-screen flex-col overflow-hidden">
       <Header isOnline={isOnline} />
 
-      {/* Indicador discreto de que é a tela de teste (uso interno) — um
-          selinho pequeno no canto, sem cor chamativa, integrado ao tema
-          escuro da página em vez de uma faixa de alerta. */}
-      <div className="tag-pill pointer-events-none absolute right-6 top-6 z-10 flex items-center gap-1.5 px-3 py-1 opacity-70">
-        <FlaskConical className="h-3 w-3 text-[var(--muted-dim)]" />
-        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.15em] text-[var(--muted-dim)]">
-          Teste interno
-        </span>
+      {/* Alternador rápido entre as duas visões — fica junto do topo pra
+          trocar em um clique. */}
+      <div className="absolute left-10 top-6 z-10 flex gap-1.5">
+        {VIEWS.map((v) => (
+          <button
+            key={v.key}
+            onClick={() => setView(v.key)}
+            className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+              view === v.key
+                ? "bg-[var(--green-600)] text-white"
+                : "border border-[var(--panel-border)] text-[var(--muted)]"
+            }`}
+          >
+            {v.label}
+          </button>
+        ))}
       </div>
+
+      {/* Selo "Teste interno" — só aparece quando a visão de teste está
+          ativa, pra nunca marcar os dados reais como se fossem teste. */}
+      {isTeste && (
+        <div className="tag-pill pointer-events-none absolute right-6 top-6 z-10 flex items-center gap-1.5 px-3 py-1 opacity-90">
+          <FlaskConical className="h-3 w-3 text-[var(--muted-dim)]" />
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.15em] text-[var(--muted-dim)]">
+            Teste interno
+          </span>
+        </div>
+      )}
 
       <TickerBanner sales={buildTickerSales(data)} />
 
@@ -78,10 +112,6 @@ export default function TvDashboardDemoPage() {
           <SalesFeed sales={data.salesFeed} mentoriaHistory={data.mentoriaHistory} />
         </section>
       </main>
-
-      <div className="pointer-events-none absolute bottom-3 right-4 font-mono text-[10px] text-[var(--muted-dim)]">
-        modo demonstração — 88 vendas de teste somadas às vendas reais, só nesta tela
-      </div>
     </div>
   );
 }
