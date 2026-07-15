@@ -57,9 +57,9 @@ export default function TvDashboardDemoPage() {
     <div className="relative flex h-screen w-screen flex-col overflow-hidden">
       <Header isOnline={isOnline} />
 
-      {/* Alternador rápido entre as duas visões — fica junto do topo pra
-          trocar em um clique. */}
-      <div className="absolute left-10 top-6 z-10 flex gap-1.5">
+      {/* Alternador rápido entre as duas visões — canto inferior esquerdo,
+          longe da logo, pra trocar em um clique. */}
+      <div className="absolute bottom-4 left-10 z-10 flex gap-1.5">
         {VIEWS.map((v) => (
           <button
             key={v.key}
