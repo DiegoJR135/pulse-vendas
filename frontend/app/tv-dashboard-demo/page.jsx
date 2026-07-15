@@ -1,13 +1,15 @@
 // app/tv-dashboard-demo/page.jsx
 //
-// Tela de DEMONSTRAÇÃO — visualmente igual à tela real (/tv-dashboard),
-// mas com 88 vendas de ingresso fictícias somadas às vendas reais só
-// aqui, geradas no navegador (não grava nada no backend/banco). Existe
-// pra testar como o painel fica com bastante volume de vendas, sem
-// misturar com os dados reais que o Rafa acompanha na tela principal.
+// Tela de DEMONSTRAÇÃO (uso interno) — visualmente igual à tela real
+// (/tv-dashboard), mas com 88 vendas de ingresso fictícias somadas às
+// vendas reais só aqui, geradas no navegador (não grava nada no
+// backend/banco). Existe pra testar/mostrar internamente como o painel
+// fica com bastante volume de vendas, sem misturar com os dados reais
+// que o Rafa acompanha na tela principal.
 //
-// Por isso tem a faixa "DADOS DE TESTE" fixa no topo — pra nunca ser
-// confundida com o painel real.
+// Mantém um indicador discreto (não é a barra amarela chamativa) — só
+// pra quem souber que é a tela de teste confirmar isso, sem virar um
+// elemento gritante na apresentação.
 "use client";
 
 import Header from "@/components/Header";
@@ -19,7 +21,7 @@ import FeaturedSale from "@/components/FeaturedSale";
 import Leaderboard from "@/components/Leaderboard";
 import SalesFeed from "@/components/SalesFeed";
 import { useDemoSalesFeed } from "@/lib/useDemoSalesFeed";
-import { AlertTriangle } from "lucide-react";
+import { FlaskConical } from "lucide-react";
 
 function buildTickerSales(data) {
   const merged = [data.lastSale, ...data.salesFeed].filter(Boolean);
@@ -38,15 +40,18 @@ export default function TvDashboardDemoPage() {
 
   return (
     <div className="relative flex h-screen w-screen flex-col overflow-hidden">
-      {/* Faixa de aviso — fixa, não dá pra tirar navegando/scrollando */}
-      <div className="flex flex-shrink-0 items-center justify-center gap-2 bg-amber-500 py-1.5 text-black">
-        <AlertTriangle className="h-4 w-4" />
-        <span className="text-xs font-bold uppercase tracking-[0.2em]">
-          Dados de teste — tela de demonstração, não reflete o painel real
+      <Header isOnline={isOnline} />
+
+      {/* Indicador discreto de que é a tela de teste (uso interno) — um
+          selinho pequeno no canto, sem cor chamativa, integrado ao tema
+          escuro da página em vez de uma faixa de alerta. */}
+      <div className="tag-pill pointer-events-none absolute right-6 top-6 z-10 flex items-center gap-1.5 px-3 py-1 opacity-70">
+        <FlaskConical className="h-3 w-3 text-[var(--muted-dim)]" />
+        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.15em] text-[var(--muted-dim)]">
+          Teste interno
         </span>
       </div>
 
-      <Header isOnline={isOnline} />
       <TickerBanner sales={buildTickerSales(data)} />
 
       <main className="grid min-h-0 flex-1 grid-cols-12 gap-6 px-10 pb-8">
