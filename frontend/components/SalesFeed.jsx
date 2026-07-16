@@ -5,9 +5,12 @@ import { useMemo, useState } from "react";
 import { Bot, Pencil, CalendarClock, Trash2 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Mesma chave configurada no backend (ADMIN_API_KEY) — protege as exclusões
+// pra que só o painel consiga apagar vendas, não qualquer requisição direta.
+const ADMIN_API_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || "";
 
 function formatCurrency(value) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
 // Mostra dia + hora — sem o dia, fica impossível saber QUANDO a venda
@@ -80,7 +83,10 @@ export default function SalesFeed({ sales, mentoriaHistory = [] }) {
     if (!window.confirm(`Excluir ${nome} de ${item.client}? Essa ação não pode ser desfeita.`)) return;
     setDeletingId(item.id);
     try {
-      await fetch(`${API_URL}/api/${endpoint}/${rawId}`, { method: "DELETE" });
+      await fetch(`${API_URL}/api/${endpoint}/${rawId}`, {
+        method: "DELETE",
+        headers: ADMIN_API_KEY ? { "x-api-key": ADMIN_API_KEY } : {},
+      });
       // não precisa atualizar o estado local — o backend publica o snapshot
       // novo via SSE assim que apaga, e o painel atualiza sozinho.
     } catch {

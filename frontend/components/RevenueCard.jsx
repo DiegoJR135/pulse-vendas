@@ -2,7 +2,7 @@
 import { TrendingUp, Target } from "lucide-react";
 
 function formatCurrency(value) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
 // A meta aqui é por QUANTIDADE DE INGRESSOS vendidos (pagos + convidados),

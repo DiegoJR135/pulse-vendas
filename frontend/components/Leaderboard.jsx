@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Crown } from "lucide-react";
 
 function formatCurrency(value) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
 const TABS = [
