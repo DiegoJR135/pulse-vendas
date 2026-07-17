@@ -10,6 +10,7 @@ SELLERS = {
     "natyjustino": {"name": "Naty Justino", "avatar": "https://i.pravatar.cc/150?img=47"},
     "karolina": {"name": "Karolina", "avatar": "https://i.pravatar.cc/150?img=32"},
     "lavinia": {"name": "Lavínia", "avatar": "https://i.pravatar.cc/150?img=21"},
+    "carolranu": {"name": "Carol Ranu", "avatar": "https://i.pravatar.cc/150?img=15"},
 }
 
 # Alguns links usam um código de UTM diferente do nome do vendedor (ex: os
@@ -39,8 +40,11 @@ CHANNEL_ALIASES = {
 
 
 def resolve_seller(code: str | None):
+    # Sem código de vendedor = venda veio de um lugar sem UTM de vendedor
+    # configurada (ex: link genérico do Instagram). Nesses casos, contamos
+    # a venda pra Karolina, que hoje é quem mais recebe esse tipo de tráfego.
     if not code:
-        return "desconhecido", FALLBACK
+        return "karolina", SELLERS["karolina"]
     key = code.strip().lower()
     key = SELLER_ALIASES.get(key, key)  # traduz códigos alternativos (cs, social_media, ...) pro vendedor real
     seller = SELLERS.get(key)
