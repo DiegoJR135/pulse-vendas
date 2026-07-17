@@ -22,6 +22,7 @@ import Leaderboard from "@/components/Leaderboard";
 import SalesFeed from "@/components/SalesFeed";
 import { useSalesFeed } from "@/lib/useSalesFeed";
 import { useDemoSalesFeed } from "@/lib/useDemoSalesFeed";
+import { FlaskConical } from "lucide-react";
 
 function buildTickerSales(data) {
   const merged = [data.lastSale, ...data.salesFeed].filter(Boolean);
@@ -36,8 +37,8 @@ function buildTickerSales(data) {
 }
 
 const VIEWS = [
-  { key: "real", label: "Dados 1" },
-  { key: "teste", label: "Dados 2" },
+  { key: "real", label: "Dados Reais" },
+  { key: "teste", label: "Dados de Teste" },
 ];
 
 export default function TvDashboardDemoPage() {
@@ -73,6 +74,17 @@ export default function TvDashboardDemoPage() {
           </button>
         ))}
       </div>
+
+      {/* Selo "Teste interno" — só aparece quando a visão de teste está
+          ativa, pra nunca marcar os dados reais como se fossem teste. */}
+      {isTeste && (
+        <div className="tag-pill pointer-events-none absolute right-6 top-6 z-10 flex items-center gap-1.5 px-3 py-1 opacity-90">
+          <FlaskConical className="h-3 w-3 text-[var(--muted-dim)]" />
+          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.15em] text-[var(--muted-dim)]">
+            Teste interno
+          </span>
+        </div>
+      )}
 
       <TickerBanner sales={buildTickerSales(data)} />
 
