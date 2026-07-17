@@ -36,11 +36,6 @@ const SELLERS = [
   { name: "Karolina", avatar: "https://i.pravatar.cc/150?img=32" },
 ];
 
-// Ajuste manual pra remanejar algumas vendas fictícias da Naty pras outras
-// duas vendedoras, invertendo a ordem do leaderboard (Lavínia 1º, Karolina 2º,
-// Naty 3º), sem mudar a quantidade total de vendas geradas.
-const SELLER_INDEX_OVERRIDES = { 9: 1, 21: 1, 24: 1, 33: 1, 27: 2, 30: 2 };
-
 const CHANNELS = ["WhatsApp", "Instagram"];
 
 // PRNG determinístico (mulberry32) — com uma seed fixa, os 88 registros
@@ -87,7 +82,7 @@ export function generateFakeTickets(count = 88, seed = 20260715) {
     // Distribui os 3 vendedores de forma aproximadamente igual (round-robin
     // com um pequeno embaralhamento), em vez de puramente aleatório — assim
     // fica ~30/29/29, igual pedido.
-    const seller = SELLERS[SELLER_INDEX_OVERRIDES[i] ?? (i % SELLERS.length)];
+    const seller = SELLERS[i % SELLERS.length];
     const channel = pick(rng, CHANNELS);
 
     // Espalha as datas nos últimos 25 dias, sempre no passado.
